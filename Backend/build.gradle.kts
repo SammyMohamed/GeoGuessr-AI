@@ -1,10 +1,17 @@
 plugins {
     kotlin("jvm") version "2.4.0"
     kotlin("plugin.serialization") version "2.4.0"
+    application
 }
 
 group = "com.geoguessr"
 version = "0.1.0"
+
+application {
+    // Kotlin compiles top-level functions in Application.kt into a class
+    // called ApplicationKt — that's the actual JVM entry point.
+    mainClass.set("com.geoguessr.ApplicationKt")
+}
 
 repositories {
     mavenCentral()
@@ -27,6 +34,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
+    implementation("io.ktor:ktor-server-cors:$ktorVersion")
 
     // Exposed — SQL DSL, deliberately not the DAO/entity API, so queries stay
     // explicit rather than going through ORM-style entity mapping.
@@ -37,6 +45,10 @@ dependencies {
     // H2 for now (zero-setup, file/in-memory) — swap for the Postgres JDBC
     // driver + connection URL when deploying for real.
     implementation("com.h2database:h2:2.2.224")
+
+    // Real logging — without this, Ktor's own startup/request logs are
+    // silently dropped by a no-op SLF4J logger instead of printed.
+    implementation("ch.qos.logback:logback-classic:1.5.6")
 
     // Test-only: Ktor's MockEngine lets us test the inference client without
     // any real network calls, mirroring how we mocked the CLIP processor in
