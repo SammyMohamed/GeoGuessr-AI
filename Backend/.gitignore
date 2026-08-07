@@ -1,5 +1,18 @@
 .gradle/
+.kotlin/
 build/
 out/
 *.iml
 .idea/
+
+# Local H2 database files — generated runtime data, not source
+data/
+*.mv.db
+*.trace.db
+
+# User-uploaded images saved at runtime
+uploaded_images/
+
+# Seed images for game mode — large binary assets, same reasoning as
+# model weights: keep out of git, document how to regenerate instead
+seed-images/
