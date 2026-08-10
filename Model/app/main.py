@@ -15,6 +15,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError
 
 from .predictor import Predictor
+from .weights import ensure_weights_available
 
 predictor: Predictor | None = None
 
@@ -22,6 +23,7 @@ predictor: Predictor | None = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global predictor
+    ensure_weights_available()  # pulls from S3 if missing locally; no-op otherwise
     predictor = Predictor()  # loads both models' weights once
     yield
     predictor = None
