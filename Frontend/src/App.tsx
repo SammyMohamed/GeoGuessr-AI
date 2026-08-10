@@ -99,7 +99,7 @@ export default function App() {
       <header className="header">
         <p className="eyebrow">Sammy Mohamed</p>
         <h1>GeoGuessr AI</h1>
-        <p className="subhead">Upload a street-view photo, or try to beat the model yourself.<br/>This will utilize a model I built for a computer vision course that achieved accuracy of 77.7% and had the correct country in its top 5 choices 95.4% of the time among the 56 countries for which I had sufficient data.</p>
+        <p className="subhead">Upload a street-view photo, or try to beat the model yourself.<br/><br/>This will utilize a model I built for a computer vision course that achieved accuracy of 77.7% and had the correct country in its top 5 choices 95.4% of the time among the 56 countries for which I had sufficient data.</p>
       </header>
 
       <div className="action-row">

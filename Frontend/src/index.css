@@ -32,6 +32,12 @@ body {
   padding: 64px 24px 96px;
 }
 
+@media (min-width: 1000px) {
+  .page {
+    max-width: 1200px;
+  }
+}
+
 .header {
   margin-bottom: 40px;
 }
@@ -131,7 +137,7 @@ h1 {
 
 .preview-image {
   width: 100%;
-  max-height: 320px;
+  max-height: clamp(360px, 65vh, 760px);
   object-fit: cover;
   border-radius: 10px;
   border: 1px solid var(--border);
