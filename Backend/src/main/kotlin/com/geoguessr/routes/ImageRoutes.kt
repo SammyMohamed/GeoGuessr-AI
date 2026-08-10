@@ -6,6 +6,7 @@ import com.geoguessr.inference.InvalidImageException
 import com.geoguessr.repository.ImageRepository
 import com.geoguessr.repository.PredictionRepository
 import com.geoguessr.storage.ImageStorage
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
@@ -13,6 +14,7 @@ import io.ktor.http.content.streamProvider
 import io.ktor.server.application.call
 import io.ktor.server.request.receiveMultipart
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondBytes
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
@@ -84,6 +86,28 @@ fun Route.imageRoutes(
             }
 
             call.respond(ImagePredictionsResponse(id, predictions))
+        }
+
+        get("/{id}/file") {
+            val id = call.parameters["id"]?.toIntOrNull()
+            if (id == null) {
+                call.respond(HttpStatusCode.BadRequest, ErrorResponse("Invalid image id"))
+                return@get
+            }
+
+            val image = imageRepository.findById(id)
+            if (image == null) {
+                call.respond(HttpStatusCode.NotFound, ErrorResponse("Image $id not found"))
+                return@get
+            }
+
+            val bytes = imageStorage.read(image.storagePath)
+            val contentType = when (image.storagePath.substringAfterLast('.').lowercase()) {
+                "png" -> ContentType.Image.PNG
+                "jpg", "jpeg" -> ContentType.Image.JPEG
+                else -> ContentType.Application.OctetStream
+            }
+            call.respondBytes(bytes, contentType)
         }
     }
 }
