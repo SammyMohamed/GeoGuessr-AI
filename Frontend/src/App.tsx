@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { startGame, submitGuess, uploadImage } from "./api";
+import { imageFileUrl, startGame, submitGuess, uploadImage } from "./api";
 import type { GuessResultResponse, RandomGameImageResponse, RankedPrediction, UploadImageResponse } from "./types";
 
 type Mode = "idle" | "upload" | "game";
@@ -144,9 +144,8 @@ export default function App() {
 
           {session && (
             <div className="result-layout">
-              {/* Static placeholder for now — see project notes on wiring this
-                  up to the same seeded image on the backend. */}
-              <img className="preview-image" src="/game-image.jpg" alt="Guess the location" />
+              {/* Fetched from the backend by imageId — whichever image it randomly picked. */}
+              <img className="preview-image" src={imageFileUrl(session.imageId)} alt="Guess the location" />
 
               {!guessResult && (
                 <div className="guess-form">
