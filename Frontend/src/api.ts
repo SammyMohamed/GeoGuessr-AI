@@ -1,9 +1,9 @@
 import type { ErrorResponse, GuessResultResponse, RandomGameImageResponse, UploadImageResponse } from "./types";
 
-// TODO: move this to an env var (import.meta.env.VITE_API_BASE_URL) once
-// we set up local running / deployment — hardcoded for now per the current
-// scope (frontend only, not worrying about running/deploying yet).
-const API_BASE = "http://localhost:8080";
+// Read at build time (not runtime) — Vite bakes VITE_-prefixed env vars
+// into the JS bundle when you run `npm run build`. Falls back to
+// localhost for local dev when the env var isn't set.
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
 async function parseErrorOrThrow(response: Response): Promise<never> {
   let message = `Request failed with status ${response.status}`;
@@ -44,4 +44,10 @@ export async function submitGuess(sessionId: number, guessedCountry: string): Pr
 
   if (!response.ok) return parseErrorOrThrow(response);
   return response.json();
+}
+
+/** Builds the URL for an image's raw file — not a fetch call itself, just
+ * a URL for use directly in an <img src>. */
+export function imageFileUrl(imageId: number): string {
+  return `${API_BASE}/images/${imageId}/file`;
 }
