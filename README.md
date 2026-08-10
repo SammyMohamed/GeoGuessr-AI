@@ -8,10 +8,10 @@ This will utilize a model I built for a computer vision course that achieved acc
 
 ## Proposed structure (subject to change)
 
-- **`Model/`** — Python inference service (FastAPI). Wraps the trained
-  CLIP + ResNet-50 ensemble behind a single `/predict` endpoint. Model
-  weights are trained and evaluated separately (see the training
-  notebook) and loaded once at service startup.
+- **`Model/`** — Python inference service. Wraps the trained
+  CLIP + ResNet-50 ensemble behind a single `/predict` endpoint. 
+  Model weights are trained and evaluated separately and loaded once 
+  at service startup.
 - **`Backend/`** — Kotlin service (Ktor) that handles image uploads, calls
   the inference service, and persists results and game sessions to a
   relational database.
