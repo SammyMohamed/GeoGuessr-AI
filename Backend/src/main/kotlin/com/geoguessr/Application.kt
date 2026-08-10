@@ -1,9 +1,6 @@
 package com.geoguessr
 
 import com.geoguessr.db.DatabaseFactory
-import com.geoguessr.db.Images
-import com.geoguessr.db.ReferenceGroundTruth
-import com.geoguessr.db.dbQuery
 import com.geoguessr.inference.InferenceClientConfig
 import com.geoguessr.inference.KtorInferenceClient
 import com.geoguessr.inference.createDefaultHttpClient
@@ -32,42 +29,20 @@ import io.ktor.server.routing.routing
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.runBlocking
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.javatime.CurrentDateTime
-import org.jetbrains.exposed.sql.select
 import java.nio.file.Path
 
 fun main() {
-    embeddedServer(Netty, port = 8080, module = Application::module).start(wait = true)
-}
-
-/** One-off seed for game mode's single sample image — only inserts if no
- * seed row exists yet, so it's safe to leave in while testing. */
-suspend fun seedGameImageIfEmpty() = dbQuery {
-    val alreadySeeded = Images.select { Images.sourceType eq "seed_reference" }.any()
-    if (alreadySeeded) return@dbQuery
-
-    val imageId = Images.insert {
-        it[contentHash] = "seed-001"
-        it[storagePath] = "C:/Users/Sammy/Documents/GeoGuessr AI/Frontend/public/game-image.jpg"
-        it[sourceType] = "seed_reference"
-        it[uploadedAt] = CurrentDateTime
-    } get Images.id
-
-    ReferenceGroundTruth.insert {
-        it[ReferenceGroundTruth.imageId] = imageId
-        it[actualCountry] = "Kenya" // TODO: replace with your sample image's real country
-    }
+    val port = System.getenv("PORT")?.toIntOrNull() ?: 8080
+    embeddedServer(Netty, port = port, module = Application::module).start(wait = true)
 }
 
 fun Application.module() {
     DatabaseFactory.init()
-    runBlocking { seedGameImageIfEmpty() }
 
     install(ContentNegotiation) { json() }
     install(CORS) {
-        allowHost("localhost:5173")
+        val frontendHost = System.getenv("FRONTEND_HOST") ?: "localhost:5173"
+        allowHost(frontendHost, schemes = listOf("http", "https"))
         allowMethod(HttpMethod.Get)
         allowMethod(HttpMethod.Post)
         allowHeader(HttpHeaders.ContentType)
@@ -78,12 +53,16 @@ fun Application.module() {
         }
     }
 
+    // Uses S3 when S3_BUCKET_NAME is set (production); falls back to local
+    // disk otherwise (local dev) — same pattern as the DB connection below.
     val imageStorage: ImageStorage = System.getenv("S3_BUCKET_NAME")?.let { bucket ->
         S3ImageStorage(bucketName = bucket, client = createS3Client(System.getenv("AWS_REGION") ?: "us-east-1"))
     } ?: LocalFileImageStorage(Path.of("uploaded_images"))
 
-    val httpClient = createDefaultHttpClient(InferenceClientConfig())
-    val inferenceClient = KtorInferenceClient(httpClient)
+    val inferenceServiceUrl = System.getenv("INFERENCE_SERVICE_URL") ?: "http://localhost:8000"
+    val inferenceConfig = InferenceClientConfig(baseUrl = inferenceServiceUrl)
+    val httpClient = createDefaultHttpClient(inferenceConfig)
+    val inferenceClient = KtorInferenceClient(httpClient, inferenceConfig)
 
     val imageRepository = ImageRepository()
     val predictionRepository = PredictionRepository()
