@@ -35,6 +35,7 @@ export default function App() {
   const [guessInput, setGuessInput] = useState("");
   const [guessResult, setGuessResult] = useState<GuessResultResponse | null>(null);
   const [gameError, setGameError] = useState<string | null>(null);
+  const [isSubmittingGuess, setIsSubmittingGuess] = useState(false);
 
   function openUploadPanel() {
     setMode("upload");
@@ -64,6 +65,7 @@ export default function App() {
     setMode("game");
     setGameStatus("loading");
     setGameError(null);
+    setSession(null); // clear the previous round's image/session immediately
     setGuessResult(null);
     setGuessInput("");
 
@@ -79,24 +81,24 @@ export default function App() {
 
   async function handleSubmitGuess() {
     if (!session || !guessInput.trim()) return;
-    setGameStatus("loading");
+    setIsSubmittingGuess(true);
     setGameError(null);
 
     try {
       const result = await submitGuess(session.sessionId, guessInput.trim());
       setGuessResult(result);
-      setGameStatus("done");
     } catch (err) {
       setGameError(err instanceof Error ? err.message : "Something went wrong");
-      setGameStatus("error");
+    } finally {
+      setIsSubmittingGuess(false);
     }
   }
 
   return (
     <div className="page">
       <header className="header">
-        <p className="eyebrow">Field Classifier — Country ID</p>
-        <h1>Where was this taken?</h1>
+        <p className="eyebrow">Sammy Mohamed</p>
+        <h1>GeoGuessr AI</h1>
         <p className="subhead">Upload a street-view photo, or try to beat the model yourself.</p>
       </header>
 
@@ -163,9 +165,9 @@ export default function App() {
                   <button
                     className="action-btn"
                     onClick={handleSubmitGuess}
-                    disabled={!guessInput.trim() || gameStatus === "loading"}
+                    disabled={!guessInput.trim() || isSubmittingGuess}
                   >
-                    {gameStatus === "loading" ? "Submitting…" : "Submit Guess"}
+                    {isSubmittingGuess ? "Submitting…" : "Submit Guess"}
                   </button>
                 </div>
               )}
