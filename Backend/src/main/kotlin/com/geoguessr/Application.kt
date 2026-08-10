@@ -14,7 +14,10 @@ import com.geoguessr.routes.ErrorResponse
 import com.geoguessr.routes.gameRoutes
 import com.geoguessr.routes.healthRoutes
 import com.geoguessr.routes.imageRoutes
+import com.geoguessr.storage.ImageStorage
 import com.geoguessr.storage.LocalFileImageStorage
+import com.geoguessr.storage.S3ImageStorage
+import com.geoguessr.storage.createS3Client
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
@@ -75,7 +78,10 @@ fun Application.module() {
         }
     }
 
-    val imageStorage = LocalFileImageStorage(Path.of("uploaded_images"))
+    val imageStorage: ImageStorage = System.getenv("S3_BUCKET_NAME")?.let { bucket ->
+        S3ImageStorage(bucketName = bucket, client = createS3Client(System.getenv("AWS_REGION") ?: "us-east-1"))
+    } ?: LocalFileImageStorage(Path.of("uploaded_images"))
+
     val httpClient = createDefaultHttpClient(InferenceClientConfig())
     val inferenceClient = KtorInferenceClient(httpClient)
 

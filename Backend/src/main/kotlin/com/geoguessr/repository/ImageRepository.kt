@@ -66,4 +66,11 @@ class ImageRepository {
         storagePath = this[Images.storagePath],
         source = this[Images.sourceType],
     )
+
+    suspend fun insertGroundTruth(imageId: Int, actualCountry: String) = dbQuery {
+        ReferenceGroundTruth.insert {
+            it[ReferenceGroundTruth.imageId] = imageId
+            it[ReferenceGroundTruth.actualCountry] = actualCountry
+        }
+    }
 }

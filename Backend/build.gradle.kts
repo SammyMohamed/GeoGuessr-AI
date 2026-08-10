@@ -46,6 +46,13 @@ dependencies {
     // driver + connection URL when deploying for real.
     implementation("com.h2database:h2:2.2.224")
 
+    // AWS SDK v2 — S3 client for S3ImageStorage
+    implementation("software.amazon.awssdk:s3:2.28.11")
+
+    // Postgres — used in production (Neon) via DATABASE_URL; H2 above stays
+    // for local dev and tests, so both drivers need to be present.
+    implementation("org.postgresql:postgresql:42.7.4")
+
     // Real logging — without this, Ktor's own startup/request logs are
     // silently dropped by a no-op SLF4J logger instead of printed.
     implementation("ch.qos.logback:logback-classic:1.5.6")
@@ -59,13 +66,10 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.mockito:mockito-core:5.13.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 }
 
 tasks.test {
     useJUnitPlatform()
 }
-
-// No jvmToolchain() pin here on purpose — that's what caused the earlier
-// "can't find JDK 17" error. Without it, Gradle just compiles using
-// whichever JDK is set as your Gradle JVM in IntelliJ (your JDK 26),
-// which Kotlin 2.4.0 supports fine.
