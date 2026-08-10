@@ -2,6 +2,10 @@
 
 This project is a web application that guesses the country for a given street view photo. 
 
+Try it live!
+
+https://geoguessr-ai-frontend.onrender.com/
+
 ## How it works
 
 This will utilize a model I built for a computer vision course that achieved accuracy of 77.7% and had the correct country in its top 5 choices 95.4% of the time among the 56 countries for which I had sufficient data. 
